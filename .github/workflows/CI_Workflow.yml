@@ -147,6 +147,6 @@ jobs:
         run: |
           Xvfb :99 -screen 0 1280x1024x16 &
           echo "DISPLAY=:99" >> $GITHUB_ENV  # Write the DISPLAY variable to the environment file
-
-      - name: Run Selenium script
-        run: python .github/first_test.py
+          
+      - name: Run Selenium Test
+        run: xvfb-run -a python first_test.py
