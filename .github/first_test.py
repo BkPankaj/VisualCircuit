@@ -25,6 +25,8 @@ try:
         "safebrowsing.enabled": True,
         "safebrowsing.disable_download_protection": True
     }
+    options.add_argument('--headless')  # Enable headless mode
+    options.add_argument('--disable-gpu')  # Disable GPU acceleration in headless mode
     options.add_experimental_option("prefs", prefs)
     options.add_argument('--no-sandbox')
     options.add_argument('--disable-dev-shm-usage')
@@ -32,7 +34,7 @@ try:
     # options.add_argument('--headless=false')
 
     options.add_argument("--allow-running-insecure-content")  # Allow insecure content
-    options.add_argument("--unsafely-treat-insecure-origin-as-secure=http://192.168.70.147:4000")
+    options.add_argument("--unsafely-treat-insecure-origin-as-secure=http://localhost:4000")
     # Remote WebDriver URL (provided by the selenium/standalone-chrome service)
     driver = webdriver.Remote(
         command_executor='http://localhost:4444/wd/hub',
@@ -41,7 +43,7 @@ try:
 
     # Open the browser and go to the URL
 
-    driver.get('http://192.168.70.147:4000')
+    driver.get('http://localhost:4000')
 
 
     # time.sleep(120)
