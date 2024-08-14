@@ -140,14 +140,13 @@ jobs:
           python -m pip install --upgrade pip
           pip install selenium pyautogui
           
+      - name: Install Xvfb
+        run: sudo apt-get install -y xvfb
+        
       - name: Start Xvfb
         run: |
-          sudo apt-get install -y xvfb
           Xvfb :99 -screen 0 1280x1024x16 &
-
-      - name: Export display
-        run: echo "::set-env name=DISPLAY::99"
-
+          echo "DISPLAY=:99" >> $GITHUB_ENV  # Write the DISPLAY variable to the environment file
 
       - name: Run Selenium script
         run: python .github/first_test.py
