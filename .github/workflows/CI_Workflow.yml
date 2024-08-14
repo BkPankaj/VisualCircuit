@@ -90,6 +90,7 @@ jobs:
 
       - name: Run frontend test
         run: npm test -- --watchAll=false
+
         working-directory: frontend
   frontend-tests-2:
     runs-on: ubuntu-latest

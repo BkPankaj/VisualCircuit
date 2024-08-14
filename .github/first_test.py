@@ -1,17 +1,22 @@
+
 import sys
+
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import time
+
 import pyautogui
 import os
+
 
 
 
 try:
     # Set up the webdriver to connect to the remote Selenium server
     options = webdriver.ChromeOptions()
+
 
     # Configure Chrome preferences to allow downloads
     prefs = {
@@ -35,7 +40,9 @@ try:
     )
 
     # Open the browser and go to the URL
+
     driver.get('http://192.168.70.147:4000')
+
 
     # time.sleep(120)
 
@@ -45,6 +52,7 @@ try:
         EC.element_to_be_clickable((By.XPATH, "//button[contains(@class, 'menu-button') and .//span[text()='File']]"))
     )
     basic_button.click()
+
 
     # Wait for the dropdown menu to be visible
     dropdown_menu = WebDriverWait(driver, 10).until(
@@ -81,6 +89,7 @@ try:
     )
 
     # Wait for the "Open" menu item to be clickable and click it
+
     open_menu_item = WebDriverWait(driver, 20).until(
         EC.element_to_be_clickable((By.XPATH, "//ul[@role='menu' and @aria-label='File']//li[text()='Build and Download']"))
     )
@@ -99,7 +108,6 @@ try:
     else:
         print("Test Failed: No .zip file found.")
         sys.exit(1)  # Exit with code 1 for failure
-
 
 
 finally:
