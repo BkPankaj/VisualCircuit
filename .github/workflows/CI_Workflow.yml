@@ -168,10 +168,13 @@ jobs:
       - name: Generate static files
         run: python3 backend/manage.py collectstatic --noinput
 
-      - name: Check if server is running on port 8080
-        run: |
-          curl -I http://127.0.0.1:8080
-
       - name: Start backend server
-        run: python3 manage.py runserver 8080
+        run: python3 manage.py runserver 8080 &
         working-directory: backend
+      
+      - name: Wait for server to start
+        run: sleep 10
+      
+      - name: Check if server is running on port 8080
+        run: curl -I http://127.0.0.1:8080
+
