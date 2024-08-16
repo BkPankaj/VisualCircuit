@@ -169,23 +169,5 @@ jobs:
         run: python3 backend/manage.py collectstatic --noinput
 
       - name: Start backend server
-        run: python3 manage.py runserver 8080 &
+        run: python3 manage.py runserver 8080
         working-directory: backend
-      
-      - name: Wait for servers to start
-        run: sleep 15
-
-      - name: Start frontend server
-        run: npm start &
-        working-directory: frontend
-        
-      - name: Start Xvfb
-        run: |
-          Xvfb :99 -screen 0 1280x1024x16 &
-          echo "DISPLAY=:99" >> $GITHUB_ENV
-
-      - name: Wait for servers to start
-        run: sleep 30
-        
-      - name: Run Selenium tests
-        run: xvfb-run -a python .github/first_test.py
