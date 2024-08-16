@@ -172,9 +172,28 @@ jobs:
         run: python3 manage.py runserver 8080 &
         working-directory: backend
       
-      - name: Wait for server to start
-        run: sleep 10
-      
+      - name: Wait for servers to start
+        run: sleep 15
+
+      - name: Start frontend server
+        run: npm start &
+        working-directory: frontend
+
+      - name: Wait for servers to start
+        run: sleep 20
+        
+      - name: Start Xvfb
+        run: |
+          Xvfb :99 -screen 0 1280x1024x16 &
+          echo "DISPLAY=:99" >> $GITHUB_ENV
+
       - name: Check if server is running on port 8080
         run: curl -I http://127.0.0.1:8080
 
+      - name: Check if server is running on port 4000
+        run: curl -I http://localhost:4000        
+        
+      - name: Run Selenium tests
+        run: xvfb-run -a python .github/first_test.py
+
+      
