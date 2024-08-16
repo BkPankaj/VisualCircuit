@@ -196,4 +196,11 @@ jobs:
       - name: Run Selenium tests
         run: xvfb-run -a python .github/first_test.py
 
+      - name: Upload Selenium logs
+        uses: actions/upload-artifact@v4
+        with:
+          name: selenium-logs
+          path: |
+            frontend/chromedriver.log
+            frontend/geckodriver.log
       
