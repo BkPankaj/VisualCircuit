@@ -172,15 +172,29 @@ jobs:
         run: python3 manage.py runserver 8080 &
         working-directory: backend
       
-      - name: Wait for servers to start
-        run: sleep 15
+
 
       - name: Start frontend server
-        run: npm start &
+        run: npm start > frontend_server.log &
         working-directory: frontend
 
       - name: Wait for servers to start
-        run: sleep 20
+        run: sleep 30        
+      
+      - name: Start backend server
+        run: python backend/manage.py runserver 8080 > backend_server.log &
+        working-directory: backend
+
+      - name: Wait for servers to start
+        run: sleep 15
+        
+      - name: Upload server logs
+        uses: actions/upload-artifact@v4
+        with:
+          name: server-logs
+          path: |
+            frontend/frontend_server.log
+            backend/backend_server.log
         
       - name: Start Xvfb
         run: |
@@ -192,11 +206,18 @@ jobs:
 
       - name: Check if server is running on port 4000
         run: curl -I http://localhost:4000        
-        
+    
       - name: Run Selenium tests
-        run: xvfb-run -a python .github/first_test.py
-
+        run: xvfb-run -a python .github/first_test.py > selenium_test.log
+      
       - name: Upload Selenium logs
+        uses: actions/upload-artifact@v4
+        with:
+          name: selenium-logs
+          path: selenium_test.log
+
+
+      - name: Upload Selenium logs 1
         uses: actions/upload-artifact@v4
         with:
           name: selenium-logs
