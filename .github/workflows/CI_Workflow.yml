@@ -61,7 +61,7 @@ jobs:
           name: venv
           path: .venv
 
-  frontend-tests:
+  test-1:
     runs-on: ubuntu-latest
     needs: setup
     steps:
@@ -92,7 +92,7 @@ jobs:
         run: npm test -- --watchAll=false
 
         working-directory: frontend
-  frontend-tests-2:
+  tests-2:
     runs-on: ubuntu-latest
     needs: setup
 
@@ -135,6 +135,15 @@ jobs:
         with:
           python-version: '3.x'
 
+      - name: Restore backend artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: venv
+          path: .venv
+
+      - name: Activate virtual environment
+        run: source .venv/bin/activate
+
       - name: Install Selenium dependencies
         run: |
           python -m pip install --upgrade pip
@@ -142,6 +151,14 @@ jobs:
           
       - name: Install Xvfb
         run: sudo apt-get install -y xvfb
+
+      - name: Start backend server
+        run: python3 manage.py runserver 8080 &
+        working-directory: backend
+
+      - name: Start frontend server
+        run: npm start &
+        working-directory: frontend
         
       - name: Start Xvfb
         run: |
@@ -150,4 +167,3 @@ jobs:
           
       - name: Run Selenium tests
         run: xvfb-run -a python .github/first_test.py
-
