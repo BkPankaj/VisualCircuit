@@ -32,11 +32,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
 
-
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.x' 
+          python-version: '3.x'
 
       - name: Create virtual environment
         run: python -m venv .venv
@@ -53,7 +52,7 @@ jobs:
         run: cp backend/.env.template backend/.env
 
       - name: Generate static files
-        run: python backend/manage.py collectstatic
+        run: python backend/manage.py collectstatic --noinput
 
       - name: Save venv
         uses: actions/upload-artifact@v4
@@ -61,7 +60,7 @@ jobs:
           name: venv
           path: .venv
 
-  frontend-tests:
+  test-1:
     runs-on: ubuntu-latest
     needs: setup
     steps:
@@ -91,3 +90,138 @@ jobs:
       - name: Run frontend test
         run: npm test -- --watchAll=false
         working-directory: frontend
+
+  tests-2:
+    runs-on: ubuntu-latest
+    needs: setup
+
+    services:
+      selenium:
+        image: selenium/standalone-chrome
+        ports:
+          - 4444:4444
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Restore Node modules cache
+        id: restore-node-modules
+        uses: actions/cache@v4
+        with:
+          path: frontend/node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('**/frontend/package-lock.json') }}
+
+      - name: Install frontend dependencies
+        if: steps.restore-node-modules.outputs.cache-hit != 'true'
+        working-directory: frontend
+        run: npm ci --legacy-peer-deps
+  
+      - name: Permissions for node_modules
+        run: chmod -R +x frontend/node_modules/.bin
+
+      - name: Verify node_modules restoration
+        run: |
+          ls -la frontend/node_modules
+          ls -la frontend/node_modules/.bin
+
+      - name: Run frontend test
+        run: npm test -- --watchAll=false
+        working-directory: frontend
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Restore backend artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: venv
+          path: .venv
+
+      - name: Activate virtual environment
+        run: source .venv/bin/activate
+
+      - name: Install Selenium dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install selenium pyautogui
+          
+      - name: Install Xvfb
+        run: sudo apt-get install -y xvfb
+
+      - name: Add .env file
+        run: cp backend/.env.template backend/.env
+
+      - name: Verify Python path
+        run: |
+          which python
+          python --version
+
+      - name: Reinstall dependencies (ensure Django is installed)
+        run: pip install -r backend/requirements.txt
+
+      - name: Check if Django is installed
+        run: python3 -m django --version
+
+      - name: Generate static files
+        run: python3 backend/manage.py collectstatic --noinput
+
+      - name: Start backend server
+        run: python3 manage.py runserver 8080 &
+        working-directory: backend
+      
+
+
+      - name: Start frontend server
+        run: npm start > frontend_server.log &
+        working-directory: frontend
+
+      - name: Wait for servers to start
+        run: sleep 30        
+      
+      - name: Start backend server
+        run: python backend/manage.py runserver 8080 > backend_server.log &
+        working-directory: backend
+
+      - name: Wait for servers to start
+        run: sleep 15
+        
+      - name: Upload server logs
+        uses: actions/upload-artifact@v4
+        with:
+          name: server-logs
+          path: |
+            frontend/frontend_server.log
+            backend/backend_server.log
+        
+      - name: Start Xvfb
+        run: |
+          Xvfb :99 -screen 0 1280x1024x16 &
+          echo "DISPLAY=:99" >> $GITHUB_ENV
+
+      - name: Check if server is running on port 8080
+        run: curl -I http://127.0.0.1:8080
+
+      - name: Check if server is running on port 4000
+        run: curl -I http://localhost:4000        
+    
+      - name: Run Selenium tests
+        run: xvfb-run -a python .github/first_test.py > selenium_test.log
+      
+      - name: Upload Selenium logs
+        uses: actions/upload-artifact@v4
+        with:
+          name: selenium-logs
+          path: selenium_test.log
+
+
+      - name: Upload Selenium logs 1
+        uses: actions/upload-artifact@v4
+        with:
+          name: selenium-logs
+          path: |
+            frontend/chromedriver.log
+            frontend/geckodriver.log
+      
